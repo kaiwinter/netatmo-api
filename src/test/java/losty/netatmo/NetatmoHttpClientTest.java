@@ -1033,6 +1033,24 @@ public class NetatmoHttpClientTest {
         assertEquals(NetatmoHttpClient.OAuthStatus.EXPIRED_ACCESS_TOKEN, client.getOAuthStatus());
     }
 
+    @Test
+    public void testGetLatestMeasurement() throws IllegalAccessException, OAuthProblemException, OAuthSystemException {
+        NetatmoHttpClient client = prepareToRespond("{\"body\":[{\"beg_time\":1505001741,\"step_time\":308,\"value\":[[12.7,null,84],[12.7,null,84],[12.7,null,84]]}],\"status\":\"ok\",\"time_exec\":0.085386037826538,\"time_server\":1528321956}\n");
+
+        List<String> types = Arrays.asList(Params.TYPE_TEMPERATURE, Params.TYPE_PRESSURE, Params.TYPE_HUMIDITY);
+        Station station = new Station("My Station", "my-station-id");
+        Module module = new Module("My Module", "my-module-id", TYPE_INDOOR);
+
+        Measures measurement = client.getLastMeasurement(station, module, types, Params.SCALE_MAX);
+
+        assertNotNull(measurement);
+
+        assertEquals(1505001741000L, measurement.getBeginTime());
+        assertEquals(12.7, measurement.getTemperature(), 0.0);
+        assertEquals(Double.NaN, measurement.getPressure(), 0.0);
+        assertEquals(84, measurement.getHumidity(), 0.0);
+    }
+
     private static NetatmoHttpClient prepareToRespond(String string) throws OAuthProblemException, OAuthSystemException, IllegalAccessException {
         TokenStore tokenStore = new TransientTokenStore();
         tokenStore.setTokens("refreshToken", "accessToken", System.currentTimeMillis() + 20000);

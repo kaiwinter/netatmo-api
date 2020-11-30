@@ -176,6 +176,65 @@ public class NetatmoHttpClient {
     }
 
     /**
+     * Returns the last measurement for a device or module owned by the user.
+     * See
+     * <a href="https://dev.netatmo.com/en-US/resources/technical/reference/common/getmeasure">
+     * dev.netatmo.com/en-US/resources/technical/reference/common/getmeasure</a> for more information.
+     *
+     * Some parameters are optional, they can be set to "null".
+     *
+     * @param station The station to query
+     * @param module The module of the station (optional)
+     * @param types A list of the types to query
+     * @param scale The scale to query
+     * @return The latest Measures from Netatmo or <code>null</code>.
+     * @throws NetatmoNotLoggedInException If not logged in.
+     * @throws NetatmoOAuthException When something goes wrong with OAuth.
+     * @throws NetatmoParseException If parsing goes wrong.
+     */
+    public Measures getLastMeasurement(final Station station, final Module module, final List<String> types, final String scale)
+            throws NetatmoNotLoggedInException, NetatmoOAuthException, NetatmoParseException {
+
+        verifyLoggedIn();
+        verifyAccessToken();
+
+        final String[] typesArr;
+        if (types != null) {
+            typesArr = types.toArray(new String[0]);
+        } else {
+            typesArr = new String[0];
+        }
+
+        final List<String> params = new ArrayList<>();
+        params.add("device_id=" + station.getId());
+        params.add("scale=" + scale);
+        params.add("type=" + implode(",", typesArr));
+
+        if (module != null) {
+            params.add("module_id=" + module.getId());
+        }
+        params.add("date_end=last");
+
+        final String query = implode("&", params.toArray(new String[0]));
+        final String request = URL_GET_MEASURES + "?" + query;
+
+        try {
+            final OAuthClientRequest bearerClientRequest = new OAuthBearerClientRequest(request).setAccessToken(tokenStore.getAccessToken()).buildQueryMessage();
+            final OAuthResourceResponse resourceResponse = oAuthClient.resource(bearerClientRequest, OAuth.HttpMethod.GET, OAuthResourceResponse.class);
+
+            List<Measures> measures = NetatmoUtils.parseMeasures(new JSONObject(resourceResponse.getBody()), typesArr);
+            if (measures.isEmpty()) {
+                return null;
+            }
+            return measures.get(0);
+        } catch (OAuthSystemException | OAuthProblemException e) {
+            throw new NetatmoOAuthException(e);
+        } catch (JSONException e) {
+            throw new NetatmoParseException(e);
+        }
+    }
+
+    /**
      * Returns the list of measures for a device or module owned by the user.
      * See
      * <a href="https://dev.netatmo.com/en-US/resources/technical/reference/common/getmeasure">
