@@ -186,13 +186,12 @@ public class NetatmoHttpClient {
      * @param station The station to query
      * @param module The module of the station (optional)
      * @param types A list of the types to query
-     * @param scale The scale to query
      * @return The latest Measures from Netatmo or <code>null</code>.
      * @throws NetatmoNotLoggedInException If not logged in.
      * @throws NetatmoOAuthException When something goes wrong with OAuth.
      * @throws NetatmoParseException If parsing goes wrong.
      */
-    public Measures getLastMeasurement(final Station station, final Module module, final List<String> types, final String scale)
+    public Measures getLastMeasurement(final Station station, final Module module, final List<String> types)
             throws NetatmoNotLoggedInException, NetatmoOAuthException, NetatmoParseException {
 
         verifyLoggedIn();
@@ -207,7 +206,7 @@ public class NetatmoHttpClient {
 
         final List<String> params = new ArrayList<>();
         params.add("device_id=" + station.getId());
-        params.add("scale=" + scale);
+        params.add("scale=max");
         params.add("type=" + implode(",", typesArr));
 
         if (module != null) {

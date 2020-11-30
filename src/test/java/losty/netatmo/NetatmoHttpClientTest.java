@@ -1041,7 +1041,7 @@ public class NetatmoHttpClientTest {
         Station station = new Station("My Station", "my-station-id");
         Module module = new Module("My Module", "my-module-id", TYPE_INDOOR);
 
-        Measures measurement = client.getLastMeasurement(station, module, types, Params.SCALE_MAX);
+        Measures measurement = client.getLastMeasurement(station, module, types);
 
         assertNotNull(measurement);
 
