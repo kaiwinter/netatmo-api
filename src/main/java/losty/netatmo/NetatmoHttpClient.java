@@ -259,9 +259,6 @@ public class NetatmoHttpClient {
                                       final List<String> types, final String scale, final Date dateBegin, final Date dateEnd, final Integer limit, final Boolean realTime)
             throws NetatmoNotLoggedInException, NetatmoOAuthException, NetatmoParseException {
 
-        verifyLoggedIn();
-        verifyAccessToken();
-
         Long dateBeginMillis = null;
         if (dateBegin != null) {
             dateBeginMillis = (dateBegin.getTime() / 1000);
